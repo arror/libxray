@@ -28,18 +28,11 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
-type SniffingConfig struct {
-	Enabled                        bool     `json:"enabled"`
-	OverrideDestinationForProtocol []string `json:"overrideDestinationForProtocol"`
-	MetadataOnly                   bool     `json:"metadataOnly"`
-	RouteOnly                      bool     `json:"routeOnly"`
-}
-
 type Config struct {
-	Tag      string         `json:"tag"`
-	Fd       int            `json:"fd"`
-	MTU      int            `json:"mtu"`
-	Sniffing SniffingConfig `json:"sniffing"`
+	Tag      string
+	Fd       int
+	MTU      int
+	Sniffing session.SniffingRequest
 }
 
 func init() {
@@ -65,12 +58,7 @@ func New(ctx context.Context, cfg *Config) (*Tun, error) {
 		Tag: cfg.Tag,
 	})
 	ctx = session.ContextWithContent(ctx, &session.Content{
-		SniffingRequest: session.SniffingRequest{
-			Enabled:                        cfg.Sniffing.Enabled,
-			OverrideDestinationForProtocol: cfg.Sniffing.OverrideDestinationForProtocol,
-			MetadataOnly:                   cfg.Sniffing.MetadataOnly,
-			RouteOnly:                      cfg.Sniffing.RouteOnly,
-		},
+		SniffingRequest: cfg.Sniffing,
 	})
 	return &Tun{
 		ctx:           ctx,
