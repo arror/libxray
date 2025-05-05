@@ -3,7 +3,6 @@ package app
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -19,30 +18,10 @@ import (
 
 var instance *core.Instance
 
-type VpnConfig struct {
-	MTU int `json:"mtu"`
-}
-
-type SniffingObject struct {
-	Enabled                        bool     `json:"enbale"`
-	OverrideDestinationForProtocol []string `json:"overrideDestinationForProtocol"`
-	MetadataOnly                   bool     `json:"metadataOnly"`
-	RouteOnly                      bool     `json:"routeOnly"`
-}
-
-type InboundObject struct {
-	Tag      string         `json:"tag"`
-	Fd       int            `json:"fd"`
-	Config   VpnConfig      `json:"config"`
-	Sniffing SniffingObject `json:"sniffing"`
-}
-
 type Config struct {
-	Id       string        `json:"id"`
-	Inbound  InboundObject `json:"inbound"`
-	FilesDir string        `json:"filesDir"`
-	CacheDir string        `json:"cacheDir"`
-	TempDir  string        `json:"tempDir"`
+	FilesDir string `json:"filesDir"`
+	CacheDir string `json:"cacheDir"`
+	TempDir  string `json:"tempDir"`
 }
 
 func Run(config []byte) (err error) {
@@ -51,17 +30,16 @@ func Run(config []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	os.Setenv(platform.AssetLocation, fmt.Sprintf("%s/asset", cfg.FilesDir))
+	os.Setenv(platform.AssetLocation, filepath.Join(cfg.FilesDir, "asset"))
 	return run(cfg)
 }
 
 func run(config Config) (err error) {
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s.json", config.TempDir, config.Id))
+	data, err := os.ReadFile(filepath.Join(config.TempDir, "config.json"))
 	if err != nil {
 		return err
 	}
 	cfg, err := core.LoadConfig("json", bytes.NewReader(data))
-	cfg.Inbound = []*core.InboundHandlerConfig{}
 	if err != nil {
 		return err
 	}
@@ -72,16 +50,13 @@ func run(config Config) (err error) {
 	instance.AddFeature(common.Must1(core.CreateObject(instance, &server.Config{
 		Path: filepath.Join(config.FilesDir, "vpn.sock"),
 	})).(features.Feature))
-	instance.AddFeature(common.Must1(core.CreateObject(instance, &tun.Config{
-		Tag: config.Inbound.Tag,
-		Fd:  config.Inbound.Fd,
-		MTU: config.Inbound.Config.MTU,
-		Sniffing: tun.SniffingObject{
-			Enabled:                        config.Inbound.Sniffing.Enabled,
-			OverrideDestinationForProtocol: config.Inbound.Sniffing.OverrideDestinationForProtocol,
-			MetadataOnly:                   config.Inbound.Sniffing.MetadataOnly,
-			RouteOnly:                      config.Inbound.Sniffing.RouteOnly,
-		},
-	})).(features.Feature))
+	temp := struct {
+		Tun tun.Config `json:"tun"`
+	}{}
+	err = json.Unmarshal(data, &temp)
+	if err != nil {
+		return err
+	}
+	instance.AddFeature(common.Must1(core.CreateObject(instance, &temp.Tun)).(features.Feature))
 	return instance.Start()
 }

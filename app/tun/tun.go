@@ -28,18 +28,18 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
-type SniffingObject struct {
-	Enabled                        bool
-	OverrideDestinationForProtocol []string
-	MetadataOnly                   bool
-	RouteOnly                      bool
+type SniffingConfig struct {
+	Enabled                        bool     `json:"enabled"`
+	OverrideDestinationForProtocol []string `json:"overrideDestinationForProtocol"`
+	MetadataOnly                   bool     `json:"metadataOnly"`
+	RouteOnly                      bool     `json:"routeOnly"`
 }
 
 type Config struct {
-	Tag      string
-	Fd       int
-	MTU      int
-	Sniffing SniffingObject
+	Tag      string         `json:"tag"`
+	Fd       int            `json:"fd"`
+	MTU      int            `json:"mtu"`
+	Sniffing SniffingConfig `json:"sniffing"`
 }
 
 func init() {

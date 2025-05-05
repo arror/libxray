@@ -2,10 +2,11 @@ package app
 
 import (
 	"sync"
+
 	"vpn/app/ohos"
 
-	"github.com/sagernet/sing/common"
 	appLog "github.com/xtls/xray-core/app/log"
+	common "github.com/xtls/xray-core/common"
 	commonLog "github.com/xtls/xray-core/common/log"
 )
 
@@ -22,10 +23,6 @@ func CreateStdoutLogWriter(writer func(string) error) (commonLog.WriterCreator, 
 	}, nil
 }
 
-func CreateFileLogWriter(path string) (commonLog.WriterCreator, error) {
-	return commonLog.CreateFileLogWriter(path)
-}
-
 func (log *HiLog) Write(s string) error {
 	log.mutex.Lock()
 	defer log.mutex.Unlock()
@@ -40,20 +37,9 @@ func (log *HiLog) Close() error {
 }
 
 func init() {
-	common.Must(appLog.RegisterHandlerCreator(appLog.LogType_None, func(_ appLog.LogType, _ appLog.HandlerCreatorOptions) (commonLog.Handler, error) {
-		return nil, nil
-	}))
 	common.Must(appLog.RegisterHandlerCreator(appLog.LogType_Console, func(_ appLog.LogType, _ appLog.HandlerCreatorOptions) (commonLog.Handler, error) {
 		return commonLog.NewLogger(
-			common.Must1(CreateStdoutLogWriter(ohos.MustGetPlatformSupport().Log)),
+			common.Must2(CreateStdoutLogWriter(ohos.MustGetPlatformSupport().Log)).(commonLog.WriterCreator),
 		), nil
-	}))
-	common.Must(appLog.RegisterHandlerCreator(appLog.LogType_File, func(_ appLog.LogType, options appLog.HandlerCreatorOptions) (commonLog.Handler, error) {
-		return commonLog.NewLogger(
-			common.Must1(CreateFileLogWriter(options.Path)),
-		), nil
-	}))
-	common.Must(appLog.RegisterHandlerCreator(appLog.LogType_Event, func(_ appLog.LogType, _ appLog.HandlerCreatorOptions) (commonLog.Handler, error) {
-		return nil, nil
 	}))
 }
