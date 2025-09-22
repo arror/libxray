@@ -9,7 +9,7 @@ import (
 	"vpn/app/server"
 	"vpn/app/tun"
 
-	"github.com/sagernet/sing/common"
+	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/features"
 
@@ -63,7 +63,7 @@ func run(config Config) (err error) {
 	if err != nil {
 		return err
 	}
-	instance.AddFeature(common.Must1(core.CreateObject(instance, &server.Config{
+	instance.AddFeature(common.Must2(core.CreateObject(instance, &server.Config{
 		Path: filepath.Join(config.FilesDir, "vpn.sock"),
 	})).(features.Feature))
 	temp := &struct {
@@ -73,7 +73,7 @@ func run(config Config) (err error) {
 	if err != nil {
 		return err
 	}
-	instance.AddFeature(common.Must1(core.CreateObject(instance, &tun.Config{
+	instance.AddFeature(common.Must2(core.CreateObject(instance, &tun.Config{
 		Tag: temp.Tun.Tag,
 		Fd:  temp.Tun.Fd,
 		MTU: temp.Tun.MTU,

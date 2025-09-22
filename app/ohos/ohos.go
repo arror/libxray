@@ -1,7 +1,7 @@
 package ohos
 
 import (
-	"fmt"
+	"errors"
 
 	common "github.com/xtls/xray-core/common"
 )
@@ -19,11 +19,11 @@ func RegisterPlatformSupport(ps PlatformSupport) {
 
 func GetPlatformSupport() (PlatformSupport, error) {
 	if instance == nil {
-		return nil, fmt.Errorf("PlatformSupport not register.")
+		return nil, errors.New("")
 	}
 	return instance, nil
 }
 
 func MustGetPlatformSupport() PlatformSupport {
-	return common.Must2(GetPlatformSupport()).(PlatformSupport)
+	return common.Must2(GetPlatformSupport())
 }

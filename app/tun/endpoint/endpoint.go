@@ -23,7 +23,6 @@ type Endpoint struct {
 }
 
 func New(fd, mtu int) *Endpoint {
-	syscall.SetNonblock(fd, false)
 	return &Endpoint{
 		Endpoint: channel.New(1<<10, uint32(mtu), ""),
 		fd:       fd,

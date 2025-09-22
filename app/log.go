@@ -39,7 +39,7 @@ func (log *HiLog) Close() error {
 func init() {
 	common.Must(appLog.RegisterHandlerCreator(appLog.LogType_Console, func(_ appLog.LogType, _ appLog.HandlerCreatorOptions) (commonLog.Handler, error) {
 		return commonLog.NewLogger(
-			common.Must2(CreateStdoutLogWriter(ohos.MustGetPlatformSupport().Log)).(commonLog.WriterCreator),
+			common.Must2(CreateStdoutLogWriter(ohos.MustGetPlatformSupport().Log)),
 		), nil
 	}))
 }
